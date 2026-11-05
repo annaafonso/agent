@@ -1,0 +1,10 @@
+ray[tune]
+recbole
+pandas
+google-genai
+pydantic
+statsmodels
+kmeans-pytorch
+torch<2.6
+scipy<1.14
+numpy<2.0

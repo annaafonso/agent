@@ -1,0 +1,12 @@
+*.log
+
+venv/
+saved/
+__pycache__/
+data/
+dataset/
+log_tensorboard/
+json/split/
+
+database.db
+.env

@@ -1,0 +1,35 @@
+data_path: 'dataset/'
+checkpoint_dir: 'saved/'
+dataset: ml-latest-small
+
+USER_ID_FIELD: userId
+ITEM_ID_FIELD: movieId
+RATING_FIELD: rating
+TIME_FIELD: timestamp
+
+load_col:
+    inter: [userId, movieId, rating, timestamp]
+
+MAX_ITEM_LIST_LENGTH: 50
+
+user_inter_num_interval: "[5,inf)"
+item_inter_num_interval: "[5,inf)"
+val_interval:
+    rating: "[3,inf)"
+    # timestamp: "[97830000, inf)"
+
+eval_args:
+    split: {'RS': [0.8, 0.1, 0.1]}
+    group_by: user
+    order: TO
+    mode: full
+
+epochs: 300 # Valor padrão
+stopping_step: 10
+
+metrics: ['Recall', 'NDCG', 'MRR', 'Hit']
+topk: [20]
+valid_metric: Recall@20
+
+train_neg_sample_args: ~
+    
