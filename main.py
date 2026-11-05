@@ -1,20 +1,19 @@
 import os
-from google import genai
-from google.genai import types
-import agent, sasrec
- 
-api_key = os.environ.get("GEMINI_API_KEY")
-if not api_key:
-    raise RuntimeError(
-        "Variável de ambiente GEMINI_API_KEY não encontrada. "
-    )
-client = genai.Client(api_key=api_key)
+import requests
+import agent
+import sasrec
+from pydantic import ValidationError
+
+if not os.environ.get("OPENROUTER_API_KEY"):
+    raise RuntimeError("Variável de ambiente OPENROUTER_API_KEY não encontrada.")
 
 def main():
-    # Carrega o modelo SASRec
     config, model, dataset = sasrec.load_model()
 
     userId = int(input("Digite o ID do usuário: "))
+    historico_ids = agent.load_history_movie_ids(userId)
+    candidatos_ids = agent.load_return_topk(historico_ids, config, model, dataset)
+
     print("Conversa iniciada. Digite 'Sair' para encerrar.\n")
 
     while True:
@@ -24,18 +23,20 @@ def main():
             print("Conversa encerrada.")
             break
 
+        conversa = agent.load_history(userId)
+        prompt = agent.agent_instruction(userId, historico_ids, candidatos_ids, conversa)
+
+        try:
+            recomendacao, uso = agent.ask_agent(prompt, mensagem)
+        except requests.exceptions.RequestException as erro:
+            print(f"Erro ao contatar o agente: {erro}\n")
+            continue
+        except ValidationError as erro:
+            print(f"Resposta malformada do agente: {erro}\n")
+            continue
+
+        resposta = recomendacao.response
         agent.save_history(userId, 'usuario', mensagem)
-        prompt = agent.agent_instruction(userId, config, model, dataset)
-
-        response = client.models.generate_content(
-            model='gemini-3.5-flash',
-            contents=mensagem,
-            config=types.GenerateContentConfig(
-                system_instruction=prompt
-            )
-        )
-
-        resposta= response.text
         agent.save_history(userId, 'assistente', resposta)
 
         print(f"Agente: {resposta}\n")
