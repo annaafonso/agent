@@ -7,6 +7,8 @@ data/
 dataset/
 log_tensorboard/
 json/split/
+json/results
+rastros/
 
 database.db
 .env
